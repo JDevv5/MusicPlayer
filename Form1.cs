@@ -38,9 +38,7 @@ namespace MusicPlayer
                                                  e.Bounds.Width - 10, e.Bounds.Height));
             };
 
-            // ... (el resto de tu código de constructor) ...
-
-            // Asegúrate de que el ListView esté en el frente
+            // Asegurar de que el ListView este en el frente
             spotifyListView.BringToFront();
 
             // Hacer la ventana cuadrada (mismo ancho que alto)
