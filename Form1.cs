@@ -4,25 +4,45 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//prueba numero 2
+
 
 namespace MusicPlayer
 {
     public partial class Form1 : Form
     {
+
         Queue<string> q = new Queue<string>();
         string[] Musics = new string[1000];
         int cont;
         string a;
 
-
         public Form1()
         {
             InitializeComponent();
+            spotifyListView.OwnerDraw = true;
+            spotifyListView.DrawColumnHeader += (s, e) => e.DrawDefault = false;
+            spotifyListView.DrawItem += (s, e) =>
+            {
+                e.DrawDefault = false;
+                e.Graphics.FillRectangle(
+                    e.Item.Selected ? new SolidBrush(Color.FromArgb(70, 70, 70)) :
+                                     new SolidBrush(spotifyListView.BackColor),
+                    e.Bounds);
+                e.Graphics.DrawString(e.Item.Text, e.Item.Font, Brushes.White,
+                                    new Rectangle(e.Bounds.X + 10, e.Bounds.Y,
+                                                 e.Bounds.Width - 10, e.Bounds.Height));
+            };
+
+            // ... (el resto de tu código de constructor) ...
+
+            // Asegúrate de que el ListView esté en el frente
+            spotifyListView.BringToFront();
+
             // Hacer la ventana cuadrada (mismo ancho que alto)
             this.FormBorderStyle = FormBorderStyle.FixedSingle; // Para que no se pueda redimensionar
             this.MaximizeBox = false; // Deshabilitar el botón de maximizar
@@ -113,92 +133,39 @@ namespace MusicPlayer
 
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            try {
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                timer1.Start();
-            }
-          
-
-            catch (System.IndexOutOfRangeException) {
-
-                MessageBox.Show("Select a Song", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-        }
-
-        private void stopbtn_Click(object sender, EventArgs e)
-        {
-            Player.Ctlcontrols.stop();
-        }
-
-        private void pausebtn_Click(object sender, EventArgs e)
-        {
-            Player.Ctlcontrols.pause();
-
-        }
-
-        private void resumebtn_Click(object sender, EventArgs e)
-        {
-            Player.Ctlcontrols.play();
-
-        }
-
         private void addbtn_Click(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog();
             open.Multiselect = true;
+            open.Filter = "Archivos de audio|*.mp3;*.wav;*.wma";
 
-            if (open.ShowDialog() == DialogResult.OK) 
+            if (open.ShowDialog() == DialogResult.OK)
             {
-                for (int i = 0; i < open.FileNames.LongLength; i++)
+                spotifyListView.BeginUpdate(); // Para mejor rendimiento
+
+                foreach (string filePath in open.FileNames)
                 {
-                    if (Ltb_Musics.Items.Contains(open.FileNames.GetValue(i)) == false)
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
+
+                    if (!spotifyListView.Items.Cast<ListViewItem>().Any(item => item.Text.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
                     {
-                        var r = open.SafeFileNames.GetValue(i);
-                        a = Convert.ToString(r);
-                        q.Enqueue(a);
-                        Musics[cont] = open.FileNames.GetValue(i).ToString();
-                        cont += 1;
-                       
+                        q.Enqueue(fileName);
+                        Musics[cont] = filePath;
+                        cont++;
+
+                        var item = new ListViewItem(fileName);
+                        spotifyListView.Items.Add(item);
                     }
                 }
-                Ltb_Musics.Items.Clear();
-                foreach (string id in q)
-                {
-                    Ltb_Musics.Items.Add(id);
-                }
 
-                if (Ltb_Musics.SelectedIndex < 0)
+                spotifyListView.EndUpdate();
+
+                if (spotifyListView.Items.Count > 0 && spotifyListView.SelectedItems.Count == 0)
                 {
-                    Ltb_Musics.SetSelected(0, true);
-                     //MessageBox.Show("Song Successfully Added", "Test Case 1", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    spotifyListView.Items[0].Selected = true;
+                    spotifyListView.EnsureVisible(0);
                 }
             }
-
-          
-        }
-
-        private void Ltb_Musics_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void fastforwardbtn_Click(object sender, EventArgs e)
-        {
-            Player.Ctlcontrols.fastForward();
-          //  MessageBox.Show("Song Successfully Added", "Test Case 1", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-        }
-
-        private void TimerTick_CheckedChanged(object sender, EventArgs e)
-        {
 
         }
 
@@ -208,93 +175,20 @@ namespace MusicPlayer
 
         }
 
-        private void previousbtn_Click(object sender, EventArgs e)
-        {
-            if (Ltb_Musics.SelectedIndex != 0) {
-
-                Ltb_Musics.SetSelected(Ltb_Musics.SelectedIndex - 1, true);
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-            }
-            else
-            {
-                Ltb_Musics.SelectedIndex = Ltb_Musics.Items.Count-1;
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                timer1.Start();
-            }
-        }
-
-        private void nextbtn_Click(object sender, EventArgs e)
-        {     
-            if (Ltb_Musics.SelectedIndex != Ltb_Musics.Items.Count - 1)
-            {
-                Ltb_Musics.SetSelected(Ltb_Musics.SelectedIndex + 1, true);
-                    Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                    timer1.Start();                
-            }
-            else 
-            {
-                Ltb_Musics.SelectedIndex = 0;
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                timer1.Start();
-            }
-
-
-
-        }
-
-        private void startbtn_Click(object sender, EventArgs e)
-        {
-            Ltb_Musics.SetSelected(0, true);
-            Player.URL = Musics[Ltb_Musics.SelectedIndex];
-         //   MessageBox.Show("Song Successfully Added", "Test Case 1", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
-        private void endbtn_Click(object sender, EventArgs e)
-        {
-            Ltb_Musics.SetSelected(Ltb_Musics.Items.Count - 1, true);
-            Player.URL = Musics[Ltb_Musics.SelectedIndex];
-        }
-
-        private void lblduration_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-
-        }
-
-        private void Timer_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lbl_duration_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void Player_Enter(object sender, EventArgs e)
         {
 
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-
-
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (TimerTick.Checked == true && lbltime.Text != "" && Convert.ToInt32(lbltime.Text.Replace(":", "")) 
+            if (TimerTick.Checked == true && lbltime.Text != "" && Convert.ToInt32(lbltime.Text.Replace(":", ""))
                 == Convert.ToInt32(lblduration.Text.Replace(":", "")) - 2)
             {
                 Random random = new Random();
-                Ltb_Musics.SetSelected(random.Next(Ltb_Musics.Items.Count), true);
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
+                int newIndex = random.Next(spotifyListView.Items.Count);
+                spotifyListView.Items[newIndex].Selected = true;
+                Player.URL = Musics[newIndex];
             }
 
             lbltime.Text = Player.Ctlcontrols.currentPositionString;
@@ -302,53 +196,44 @@ namespace MusicPlayer
 
         }
 
-        private void shuffle_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void Player_PlayStateChange(object sender, AxWMPLib._WMPOCXEvents_PlayStateChangeEvent e)
         {
-            String[] arr = q.ToArray();
-            if (e.newState == 8)
-            {             
+            if (e.newState == 8) // Media ended
+            {
                 BeginInvoke(new Action(() =>
                 {
                     try
                     {
-                        Ltb_Musics.SelectedIndex = Ltb_Musics.SelectedIndex + 1;
+                        int newIndex = spotifyListView.SelectedIndices[0] + 1;
+                        if (newIndex >= spotifyListView.Items.Count) newIndex = 0;
+
+                        spotifyListView.Items[newIndex].Selected = true;
+                        Player.URL = Musics[newIndex];
+                        timer1.Start();
                     }
-
-
-                catch (System.ArgumentOutOfRangeException)
+                    catch (Exception ex)
                     {
-
-                        Ltb_Musics.SelectedIndex = 0;
+                        Console.WriteLine("Error: " + ex.Message);
+                        // Manejar error si no hay canciones
                     }
-
-                  
-
-                    Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                    timer1.Start();
                 }));
+
             }
         }
 
         private void sortbtn_Click(object sender, EventArgs e)
         {
-            String[] arr = q.ToArray();// Displaying the elements in array 
+            String[] arr = q.ToArray();
             bool swap;
-            string temp; //change this too
+            string temp;
 
             do
             {
                 swap = false;
-
                 for (int index = 0; index < (arr.Length - 1); index++)
                 {
-                    if (string.Compare(arr[index], arr[index + 1]) < 0) 
+                    if (string.Compare(arr[index], arr[index + 1]) < 0)
                     {
-                        //swap
                         temp = arr[index];
                         arr[index] = arr[index + 1];
                         arr[index + 1] = temp;
@@ -357,60 +242,13 @@ namespace MusicPlayer
                 }
             } while (swap == true);
 
-            Ltb_Musics.Items.Clear();
-
-            for (int t = 0; t < arr.Length; t++) {
-                Ltb_Musics.Items.Add(arr[t]);
-            }
-
-            if (Ltb_Musics.SelectedIndex < 0)
+            spotifyListView.Items.Clear();
+            foreach (string item in arr)
             {
-                Ltb_Musics.SetSelected(0, true);
+                spotifyListView.Items.Add(item);
             }
         }
 
-        private void newbtn_Click(object sender, EventArgs e)
-        {
-            Ltb_Musics.Items.Clear();
-            q.Clear();
-
-
-            OpenFileDialog open = new OpenFileDialog();
-            open.Multiselect = true;
-
-            if (open.ShowDialog() == DialogResult.OK)
-            {
-
-                for (int i = 0; i < open.FileNames.LongLength; i++)
-                {
-
-                    if (Ltb_Musics.Items.Contains(open.FileNames.GetValue(i)) == false)
-                    {
-                        var r = open.SafeFileNames.GetValue(i);
-                        a = Convert.ToString(r);
-                        q.Enqueue(a);
-
-                        Musics[cont] = open.FileNames.GetValue(i).ToString();
-
-                        cont += 1;
-
-                    }
-                }
-
-                foreach (string id in q)
-                {
-                    Ltb_Musics.Items.Add(id);
-                }
-
-                if (Ltb_Musics.SelectedIndex < 0)
-                {
-
-                    Ltb_Musics.SetSelected(0, true);
-
-                }
-            }
-
-        }
 
         private void button1_Click_2(object sender, EventArgs e)
         {
@@ -441,12 +279,12 @@ namespace MusicPlayer
 
             } while (swap == true);
 
-            Ltb_Musics.Items.Clear();
+            spotifyListView.Items.Clear();
 
             for (int t = 0; t < arr.Length; t++)
             {
 
-                Ltb_Musics.Items.Add(arr[t]);
+                spotifyListView.Items.Add(arr[t]);
 
             }
             /*
@@ -461,71 +299,84 @@ namespace MusicPlayer
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            String[] arr = q.ToArray();
-            String search = searchtxt.Text;
+            string searchText = searchtxt.Text.ToLower();
 
-            var items = (from a in arr
-                         where a.StartsWith(search)
-                         select a).ToArray<String>();
+            foreach (ListViewItem item in spotifyListView.Items)
+            {
+                item.Selected = false;
+                item.BackColor = spotifyListView.BackColor;
 
-            Ltb_Musics.Items.Clear();
-            Ltb_Musics.Items.AddRange(items);
+                if (item.Text.ToLower().Contains(searchText))
+                {
+                    item.BackColor = Color.FromArgb(60, 60, 60);
+                }
+            }
 
-
-        
-       }
+            // Seleccionar el primer resultado si hay coincidencias
+            var firstMatch = spotifyListView.Items.Cast<ListViewItem>()
+                                                .FirstOrDefault(item => item.Text.ToLower().Contains(searchText));
+            if (firstMatch != null)
+            {
+                firstMatch.Selected = true;
+                spotifyListView.EnsureVisible(firstMatch.Index);
+            }
+        }
 
         private void iconButton1_Click(object sender, EventArgs e)
         {
-            try
+            if (spotifyListView.Items.Count == 0) return;
+
+            if (Player.playState == WMPLib.WMPPlayState.wmppsPlaying)
             {
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                timer1.Start();
+                // Si ya está reproduciendo, pausar
+                Player.Ctlcontrols.pause();
+                iconButton1.IconChar = FontAwesome.Sharp.IconChar.Play;
             }
-
-
-            catch (System.IndexOutOfRangeException)
+            else
             {
-
-                MessageBox.Show("Select a Song", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Si está pausado o detenido, reproducir
+                if (Player.playState == WMPLib.WMPPlayState.wmppsPaused)
+                {
+                    Player.Ctlcontrols.play();
+                }
+                else
+                {
+                    Player.URL = Musics[spotifyListView.SelectedIndices[0]];
+                }
+                iconButton1.IconChar = FontAwesome.Sharp.IconChar.Pause;
             }
         }
 
         private void iconButton3_Click(object sender, EventArgs e)
         {
-            if (Ltb_Musics.SelectedIndex != 0)
-            {
+            if (spotifyListView.Items.Count == 0) return;
 
-                Ltb_Musics.SetSelected(Ltb_Musics.SelectedIndex - 1, true);
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-            }
-            else
-            {
-                Ltb_Musics.SelectedIndex = Ltb_Musics.Items.Count - 1;
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                timer1.Start();
-            }
+            int newIndex = spotifyListView.SelectedIndices[0] - 1;
+            if (newIndex < 0) newIndex = spotifyListView.Items.Count - 1;
+
+            spotifyListView.Items[newIndex].Selected = true;
+            spotifyListView.EnsureVisible(newIndex);
+            Player.URL = Musics[newIndex];
+            iconButton1.IconChar = FontAwesome.Sharp.IconChar.Pause; // Cambiar a icono de pausa
         }
 
         private void iconButton2_Click(object sender, EventArgs e)
         {
-            if (Ltb_Musics.SelectedIndex != Ltb_Musics.Items.Count - 1)
-            {
-                Ltb_Musics.SetSelected(Ltb_Musics.SelectedIndex + 1, true);
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                timer1.Start();
-            }
-            else
-            {
-                Ltb_Musics.SelectedIndex = 0;
-                Player.URL = Musics[Ltb_Musics.SelectedIndex];
-                timer1.Start();
-            }
+            if (spotifyListView.Items.Count == 0) return;
+
+            int newIndex = spotifyListView.SelectedIndices[0] + 1;
+            if (newIndex >= spotifyListView.Items.Count) newIndex = 0;
+
+            spotifyListView.Items[newIndex].Selected = true;
+            spotifyListView.EnsureVisible(newIndex);
+            Player.URL = Musics[newIndex];
+            iconButton1.IconChar = FontAwesome.Sharp.IconChar.Pause; // Cambiar a icono de pausa
         }
 
         private void iconButton4_Click(object sender, EventArgs e)
         {
             Player.Ctlcontrols.pause();
+            iconButton1.IconChar = FontAwesome.Sharp.IconChar.Play; // Cambiar icono de play
         }
 
         private void TimerTick_CheckedChanged_1(object sender, EventArgs e)
@@ -533,9 +384,5 @@ namespace MusicPlayer
 
         }
 
-        private void Ltb_Musics_SelectedIndexChanged_1(object sender, EventArgs e)
-        {
-
-        }
     }
 }
