@@ -134,3 +134,5 @@ C:\Users\Jacob\Source\Repos\MusicPlayer\obj\Debug\es-MX\MusicPlayer.resources.dl
 C:\Users\Jacob\Source\Repos\MusicPlayer\obj\Debug\MusicPla.163160C2.Up2Date
 C:\Users\Jacob\Source\Repos\MusicPlayer\obj\Debug\MusicPlayer.exe
 C:\Users\Jacob\Source\Repos\MusicPlayer\obj\Debug\MusicPlayer.pdb
+C:\Users\Jacob\source\repos\MusicPlayer\obj\Debug\MusicPlayer.Letras.resources
+C:\Users\Jacob\source\repos\MusicPlayer\obj\Debug\MusicPlayer.Letras.es-MX.resources

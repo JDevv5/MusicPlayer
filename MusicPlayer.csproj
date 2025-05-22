@@ -56,6 +56,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Letras.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Letras.Designer.cs">
+      <DependentUpon>Letras.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -64,6 +70,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Letras.es-MX.resx">
+      <DependentUpon>Letras.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Letras.resx">
+      <DependentUpon>Letras.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.es-MX.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

@@ -2,7 +2,7 @@
 
 namespace MusicPlayer
 {
-    partial class Form1
+    partial class Letras
     {
         /// <summary>
         /// Required designer variable.

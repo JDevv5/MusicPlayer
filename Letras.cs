@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace MusicPlayer
 {
-    public partial class Form1 : Form
+    public partial class Letras : Form
     {
 
 
@@ -23,7 +23,7 @@ namespace MusicPlayer
         string a;
 
 
-        public Form1()
+        public Letras()
         {
             InitializeComponent();
 
